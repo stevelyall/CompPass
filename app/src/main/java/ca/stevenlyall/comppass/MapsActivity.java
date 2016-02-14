@@ -53,15 +53,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 		// 4. getLastKnownLocation
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			Log.d(TAG, "permissions not granted");
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
-			return;
+			Log.d(TAG, "Location permissions not granted");
 		}
 		Location LastKnownLocation = locationManager.getLastKnownLocation(bestProvider);
 		UpdateLocation(LastKnownLocation, "Last Known Location");
@@ -98,57 +90,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	protected void onResume() {
 		super.onResume();
-		// check for permissions
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// should explanation be shown?
-
-
-			if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-				//explain why permission is needed and request
-				explainAndAskForPermissions();
-			} else {
-				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_FINE_LOCATION);
-			}
-
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
-			return;
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			Log.d(TAG, "Location permissions not granted");
 		}
 		// Register the listener with the Location Manager to receive location updates
 		locationManager.requestLocationUpdates(bestProvider, 0, 0, locationListener);
 	}
 
-	private void explainAndAskForPermissions() {
-		AlertDialog info = new AlertDialog.Builder(MapsActivity.this).create();
-		info.setTitle("Important");
-		info.setMessage("CompPass requires access to your device's location in order to play the game.");
-		info.setButton(AlertDialog.BUTTON_POSITIVE, "Continue", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_FINE_LOCATION);
-			}
-		});
-		info.show();
-	}
 
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		switch (requestCode) {
-			case PERMISSIONS_REQUEST_FINE_LOCATION: {
-				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-					// granted
-				} else {
-					// was denied
-				}
-				return;
-			}
-		}
-	}
+
+
 
 	public void UpdateLocation(Location location, String state) {
 		if (location != null) {
@@ -182,14 +133,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 		mMap.setBuildingsEnabled(true);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
-			return;
+			Log.d(TAG, "Location permissions not granted");
 		}
 		mMap.setMyLocationEnabled(true);
 		UiSettings settings = mMap.getUiSettings();
