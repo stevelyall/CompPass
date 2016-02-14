@@ -1,19 +1,20 @@
 package ca.stevenlyall.comppass;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
+import android.widget.Toast;
 
 
 public class SplashScreenActivity extends Activity {
@@ -25,10 +26,45 @@ public class SplashScreenActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash_screen);
-
-		checkForLocationPermissions();
 	}
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		getLocationsFromServer();
+	}
+
+	private boolean isNetworkConnected() {
+		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+		return (info != null && info.isConnected());
+	}
+
+	private void getLocationsFromServer() {
+		if (isNetworkConnected()) {
+			Toast.makeText(getBaseContext(), "GET", Toast.LENGTH_LONG).show();
+			LocationsJSONRequest request = new LocationsJSONRequest();
+			request.execute();
+
+			// check for permissions
+			checkForLocationPermissions();
+		} else {
+			showNoConnectionMessage();
+		}
+	}
+
+	private void showNoConnectionMessage() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(SplashScreenActivity.this);
+		builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				SplashScreenActivity.this.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+			}
+		});
+		builder.setTitle("No Network Connection").setMessage("Please connect your device to a WiFi or cellular network and try again");
+
+		builder.create().show();
+	}
 	private void checkForLocationPermissions() {
 		// check for permissions
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
