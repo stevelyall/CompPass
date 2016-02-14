@@ -1,7 +1,9 @@
 package ca.stevenlyall.comppass;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -11,7 +13,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -98,11 +99,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	protected void onResume() {
 		super.onResume();
 		// check for permissions
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			// should explanation be shown?
+
+
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-				// TODO explain need for permission
-				Toast.makeText(this, "need location", Toast.LENGTH_LONG).show();
+				//explain why permission is needed and request
+				explainAndAskForPermissions();
 			} else {
 				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_FINE_LOCATION);
 			}
@@ -118,6 +121,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 		// Register the listener with the Location Manager to receive location updates
 		locationManager.requestLocationUpdates(bestProvider, 0, 0, locationListener);
+	}
+
+	private void explainAndAskForPermissions() {
+		AlertDialog info = new AlertDialog.Builder(MapsActivity.this).create();
+		info.setTitle("Important");
+		info.setMessage("CompPass requires access to your device's location in order to play the game.");
+		info.setButton(AlertDialog.BUTTON_POSITIVE, "Continue", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_FINE_LOCATION);
+			}
+		});
+		info.show();
 	}
 
 	@Override
