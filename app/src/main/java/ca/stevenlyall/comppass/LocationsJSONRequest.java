@@ -3,12 +3,7 @@ package ca.stevenlyall.comppass;
 import android.os.AsyncTask;
 import android.util.Log;
 
-
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -33,7 +28,7 @@ public class LocationsJSONRequest extends AsyncTask<String, String, String> {
 			String respStr = response.body().string();
 			Log.d(TAG, respStr);
 			Game game = Game.getInstance();
-			game.setLocations(new JSONArray(respStr));
+			game.setUpLocations(new JSONArray(respStr));
 			return respStr;
 
 		} catch (Exception e) {

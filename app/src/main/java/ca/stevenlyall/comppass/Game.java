@@ -8,8 +8,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -30,40 +28,18 @@ public class Game {
 		return instance;
 	}
 
+	public void setUpLocations(final JSONArray locationsJSON) throws Exception {
+		reached = new ArrayList<GameLocation>();
+
+		LocationParser parser = new LocationParser(locationsJSON);
+		locations = parser.setLocations();
+
+	}
+
 	public ArrayList<GameLocation> getLocations() {
 		return locations;
 	}
 
-	public void setLocations(JSONArray locationsJSON) throws Exception {
-		Log.d(TAG, "setLocations JSON Object:");
-		Log.d(TAG, locationsJSON.toString());
-
-		int numLocs = locationsJSON.length()/3; // 3 data points for each location
-		this.reached = new ArrayList<>();
-		this.locations = new ArrayList<>();
-		for (int i =0; i<numLocs; i++) {
-			locations.add(new GameLocation(i+1));
-		}
-
-		for (int i = 0; i < numLocs; i++) {
-			try {
-
-				JSONObject maxJSON = (JSONObject) locationsJSON.get(i+1);
-				JSONObject minJSON = (JSONObject) locationsJSON.get(i+2);
-				double maxLat = Double.parseDouble(maxJSON.getString("latitude"));
-				double minLat = Double.parseDouble(minJSON.getString("latitude"));
-				double maxLong = Double.parseDouble(maxJSON.getString("longitude"));
-				double minLong = Double.parseDouble(minJSON.getString("longitude"));
-
-				GameLocation loc = new GameLocation(i, maxLat, maxLong, minLat, minLong);
-				Log.d(TAG, "setLocations: " + loc);
-				locations.set(i, loc);
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
 	public void playLocationReachedSound(Context ctx) {
 		MediaPlayer mediaPlayer = MediaPlayer.create(ctx, R.raw.beep);
@@ -90,15 +66,19 @@ public class Game {
 	//get next location and update polygon
 	public ArrayList<LatLng> getNextLocation() {
 		reached.add(currentTarget);
-		currentTarget = locations.get(currentTarget.getLocNum() + 1);
-		if (currentTarget == null) {
+		// check for end of list
+		if (currentTarget.getLocNum() + 1 >= locations.size() - 1) {
 			allLocationsReached();
 		}
+		currentTarget = locations.get(currentTarget.getLocNum() + 1);
+
 		Log.d(TAG, "getNextLocation: " + currentTarget);
 		return getPointsForLocation(currentTarget);
 	}
 
 	private void allLocationsReached() {
+		Log.d(TAG, "allLocationsReached: " + reached.size() + " locations visited");
+		// TODO play sound, new activity
 		// TODO finish, determine and send score
 	}
 
