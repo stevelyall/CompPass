@@ -21,6 +21,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -28,6 +33,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	LocationManager locationManager;
 	LocationListener locationListener;
 	String bestProvider;
+
+	Game game;
+	GameLocation targetLocation;
+	Polygon polygon;
+
 	double lattitude;
 	double longitude;
 	private GoogleMap mMap;
@@ -36,6 +46,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_maps);
+
+		game = Game.getInstance();
 
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 		// 1. choose the best location provider
@@ -94,11 +106,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 		// Register the listener with the Location Manager to receive location updates
 		locationManager.requestLocationUpdates(bestProvider, 0, 0, locationListener);
+
+
 	}
-
-
-
-
 
 	public void UpdateLocation(Location location, String state) {
 		if (location != null) {
@@ -124,6 +134,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		LatLng startLocation = new LatLng(lattitude, longitude);
 		mMap.addMarker(new MarkerOptions().position(startLocation).title("Start Location"));
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 13), 2000, null);
+
+		targetLocation = game.getLocations().get(0);
+		PolygonOptions rectOptions = new PolygonOptions()
+				.add(targetLocation.getTopLeft())
+				.add(targetLocation.getBottomLeft())
+				.add(targetLocation.getBottomRight())
+				.add(targetLocation.getTopRight());
+
+		polygon = mMap.addPolygon(rectOptions);
+
 	}
 
 	private void setMapSettings() {
@@ -137,5 +157,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		settings.setMapToolbarEnabled(false);
 		settings.setMyLocationButtonEnabled(false);
 
+	}
+
+	// TODO get next location and update polygon
+	private void getNextLocation() {
+		targetLocation = game.getLocations().get(targetLocation.getLocNum() + 1);
+		ArrayList<LatLng> points = new ArrayList<>();
+		points.add(targetLocation.getTopLeft());
+		points.add(targetLocation.getBottomLeft());
+		points.add(targetLocation.getBottomRight());
+		points.add(targetLocation.getTopRight());
+		polygon.setPoints(points);
 	}
 }

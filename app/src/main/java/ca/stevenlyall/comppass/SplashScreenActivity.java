@@ -16,6 +16,10 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.util.concurrent.ExecutionException;
+
 
 public class SplashScreenActivity extends Activity {
 

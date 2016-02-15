@@ -4,16 +4,20 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class LocationsJSONRequest extends AsyncTask<String, String, String>{
+public class LocationsJSONRequest extends AsyncTask<String, String, String> {
 
 		private final String url = "http://stevenlyall.ca/3160project/get_locations.php";
-
+		private final String TAG = "LocationsJSONRequest";
 
 	@Override
 	protected String doInBackground(String... params) {
@@ -26,18 +30,16 @@ public class LocationsJSONRequest extends AsyncTask<String, String, String>{
 		Response response = null;
 		try {
 			response = client.newCall(request).execute();
-			return response.body().string();
-		} catch (IOException e) {
+			String respStr = response.body().string();
+			Log.d(TAG, respStr);
+			Game game = Game.getInstance();
+			game.setLocations(new JSONArray(respStr));
+			return respStr;
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return null;
-	}
-
-	@Override
-	protected void onPostExecute(String s) {
-		super.onPostExecute(s);
-		Log.d("Request", s);
 	}
 }
 
