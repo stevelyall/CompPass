@@ -3,6 +3,7 @@ package ca.stevenlyall.comppass;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -31,7 +33,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	Game game;
 	Polygon polygon;
 
-	double lattitude;
+
+	double latitude;
 	double longitude;
 	private GoogleMap map;
 
@@ -43,34 +46,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		game = Game.getInstance();
 
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		// 1. choose the best location provider
-		Criteria criteria = new Criteria();
-		criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-		criteria.setPowerRequirement(Criteria.POWER_HIGH);
-		criteria.setAltitudeRequired(false);
-		criteria.setBearingRequired(false);
-		criteria.setSpeedRequired(false);
-		criteria.setCostAllowed(false);
-		bestProvider = locationManager.getBestProvider(criteria, true);
 
+		// choose the best location provider
+		findBestLocationProvider();
 		Log.d("Location", "1- Recommended Location provider is " + bestProvider);
 
-		// 4. getLastKnownLocation
+		// last known location
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			Log.d(TAG, "Location permissions not granted");
 		}
 		Location LastKnownLocation = locationManager.getLastKnownLocation(bestProvider);
 		UpdateLocation(LastKnownLocation, "Last Known Location");
+
 		// 2. Define a listener that responds to location updates
 		locationListener = new LocationListener() {
 			@Override
 			public void onLocationChanged(Location location) {
 				// Called when a new location is found by the network location provider.
-				Log.d("Location", "2- A new location is found by the location provider ");
 				UpdateLocation(location, "Location Changed");
 
-				if (game.isLocInsideTarget(lattitude, longitude)) {
-					Log.d("Location", "Target location reached");
+				if (game.isLocInsideTarget(latitude, longitude)) {
 					onTargetLocationReached();
 				}
 			}
@@ -96,11 +91,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		mapFragment.getMapAsync(this);
 	}
 
-	private void onTargetLocationReached() {
-		//TODO increment score in game, play sound, timer
-
-		game.getNextLocation();
+	private void findBestLocationProvider() {
+		Criteria criteria = new Criteria();
+		criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+		criteria.setPowerRequirement(Criteria.POWER_HIGH);
+		criteria.setAltitudeRequired(false);
+		criteria.setBearingRequired(false);
+		criteria.setSpeedRequired(false);
+		criteria.setCostAllowed(false);
+		bestProvider = locationManager.getBestProvider(criteria, true);
 	}
+
+	private void onTargetLocationReached() {
+		//todo timer
+		Log.d("Location", "Target location reached");
+		polygon.setPoints(game.getNextLocation());
+		game.playLocationReachedSound(getBaseContext());
+	}
+
 
 	@Override
 	protected void onResume() {
@@ -116,9 +124,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 	public void UpdateLocation(Location location, String state) {
 		if (location != null) {
-			lattitude = location.getLatitude();
+			latitude = location.getLatitude();
 			longitude = location.getLongitude();
-			Log.d("Location", "** " + state + " ** - Lattitue = " + lattitude + ", and Longitude = " + longitude);
+			Log.d("Location", "** " + state + " ** - Lattitue = " + latitude + ", and Longitude = " + longitude);
 		}
 	}
 
@@ -134,11 +142,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		map = googleMap;
 		setMapSettings();
 
-		LatLng startLocation = new LatLng(lattitude, longitude);
+		LatLng startLocation = new LatLng(latitude, longitude);
 		map.addMarker(new MarkerOptions().position(startLocation).title("Start Location"));
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 13), 2000, null);
 
-		polygon = game.init(map);
+		PolygonOptions rect = game.init();
+		rect.strokeColor(Color.YELLOW);
+		polygon = map.addPolygon(rect);
 
 	}
 

@@ -1,11 +1,10 @@
 package ca.stevenlyall.comppass;
 
-import android.graphics.Color;
+import android.content.Context;
+import android.media.MediaPlayer;
 import android.util.Log;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import org.json.JSONArray;
@@ -18,9 +17,8 @@ public class Game {
 	private static Game instance;
 	private final String TAG = "GAME";
 	private ArrayList<GameLocation> locations;
+	private ArrayList<GameLocation> reached;
 	private GameLocation currentTarget;
-
-	private Polygon currentTargetRectangle;
 
 	private Game() {
 	}
@@ -41,6 +39,7 @@ public class Game {
 		Log.d(TAG, locationsJSON.toString());
 
 		int numLocs = locationsJSON.length()/3; // 3 data points for each location
+		this.reached = new ArrayList<>();
 		this.locations = new ArrayList<>();
 		for (int i =0; i<numLocs; i++) {
 			locations.add(new GameLocation(i+1));
@@ -57,10 +56,8 @@ public class Game {
 				double minLong = Double.parseDouble(minJSON.getString("longitude"));
 
 				GameLocation loc = new GameLocation(i, maxLat, maxLong, minLat, minLong);
-
+				Log.d(TAG, "setLocations: " + loc);
 				locations.set(i, loc);
-				Log.d(TAG, "setLocations: " + loc.getTopLeft() + " " + loc.getTopRight());
-				Log.d(TAG, "setLocations: " + loc.getBottomLeft() + " " + loc.getBottomRight());
 
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -68,30 +65,47 @@ public class Game {
 		}
 	}
 
-	public Polygon init(GoogleMap map) {
+	public void playLocationReachedSound(Context ctx) {
+		MediaPlayer mediaPlayer = MediaPlayer.create(ctx, R.raw.beep);
+		mediaPlayer.start();
+	}
+
+	public PolygonOptions init() {
 		currentTarget = locations.get(0);
-		PolygonOptions rectOptions = new PolygonOptions().add(currentTarget.getTopLeft()).add(currentTarget.getBottomLeft()).add(currentTarget.getBottomRight()).add(currentTarget.getTopRight()).strokeColor(Color.YELLOW);
-		currentTargetRectangle = map.addPolygon(rectOptions);
-		return currentTargetRectangle;
+		Log.d(TAG, "init: first location " + currentTarget);
+		ArrayList<LatLng> points = getPointsForLocation(currentTarget);
+		PolygonOptions rectOptions = new PolygonOptions().addAll(points);
+		return rectOptions;
+	}
+
+	private ArrayList<LatLng> getPointsForLocation(GameLocation location) {
+		ArrayList<LatLng> points = new ArrayList<>();
+		points.add(location.getTopLeft());
+		points.add(location.getBottomLeft());
+		points.add(location.getBottomRight());
+		points.add(location.getTopRight());
+		return points;
 	}
 
 	//get next location and update polygon
-	public void getNextLocation() {
+	public ArrayList<LatLng> getNextLocation() {
+		reached.add(currentTarget);
 		currentTarget = locations.get(currentTarget.getLocNum() + 1);
-		ArrayList<LatLng> points = new ArrayList<>();
-		points.add(currentTarget.getTopLeft());
-		points.add(currentTarget.getBottomLeft());
-		points.add(currentTarget.getBottomRight());
-		points.add(currentTarget.getTopRight());
-		currentTargetRectangle.setPoints(points);
+		if (currentTarget == null) {
+			allLocationsReached();
+		}
+		Log.d(TAG, "getNextLocation: " + currentTarget);
+		return getPointsForLocation(currentTarget);
 	}
 
-	// TODO call when location in polygon
-	public GameLocation getCurrentTarget() {
-		return currentTarget;
+	private void allLocationsReached() {
+		// TODO finish, determine and send score
 	}
 
-	public boolean isLocInsideTarget(double lattitude, double longitude) {
-		return (lattitude < currentTarget.getMaxLat() && lattitude > currentTarget.getMinLat()) && (longitude < currentTarget.getMaxLong() && longitude > currentTarget.getMinLong());
+	public boolean isLocInsideTarget(double latitude, double longitude) {
+		if (currentTarget == null) {
+			return false;
+		}
+		return (latitude < currentTarget.getMaxLat() && latitude > currentTarget.getMinLat()) && (longitude < currentTarget.getMaxLong() && longitude > currentTarget.getMinLong());
 	}
 }

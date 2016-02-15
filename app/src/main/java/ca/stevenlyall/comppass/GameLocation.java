@@ -82,4 +82,15 @@ public class GameLocation {
 	public void setMinLong(double minLong) {
 		this.minLong = minLong;
 	}
+
+	@Override
+	public String toString() {
+		return "GameLocation{" +
+				"locNum=" + locNum +
+				",topLeft=" + topLeft +
+				", topRight=" + topRight +
+				", bottomLeft=" + bottomLeft +
+				", bottomRight=" + bottomRight +
+				'}';
+	}
 }
