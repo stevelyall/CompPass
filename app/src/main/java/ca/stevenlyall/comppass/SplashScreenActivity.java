@@ -16,11 +16,6 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.json.JSONObject;
-
-import java.util.concurrent.ExecutionException;
-
-
 public class SplashScreenActivity extends Activity {
 
 	private static final int SPLASH_TIMEOUT = 1800;
@@ -69,6 +64,7 @@ public class SplashScreenActivity extends Activity {
 
 		builder.create().show();
 	}
+
 	private void checkForLocationPermissions() {
 		// check for permissions
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

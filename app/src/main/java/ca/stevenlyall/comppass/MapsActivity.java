@@ -1,17 +1,15 @@
 package ca.stevenlyall.comppass;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -22,10 +20,6 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -35,12 +29,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	String bestProvider;
 
 	Game game;
-	GameLocation targetLocation;
 	Polygon polygon;
 
 	double lattitude;
 	double longitude;
-	private GoogleMap mMap;
+	private GoogleMap map;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +68,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 				// Called when a new location is found by the network location provider.
 				Log.d("Location", "2- A new location is found by the location provider ");
 				UpdateLocation(location, "Location Changed");
+
+				if (game.isLocInsideTarget(lattitude, longitude)) {
+					Log.d("Location", "Target location reached");
+					onTargetLocationReached();
+				}
 			}
 
 			@Override
@@ -98,6 +96,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		mapFragment.getMapAsync(this);
 	}
 
+	private void onTargetLocationReached() {
+		//TODO increment score in game, play sound, timer
+
+		game.getNextLocation();
+	}
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -118,7 +122,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 	}
 
-
 	/**
 	 * Manipulates the map once available.
 	 * This callback is triggered when the map is ready to be used
@@ -128,45 +131,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	 */
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
-		mMap = googleMap;
+		map = googleMap;
 		setMapSettings();
 
 		LatLng startLocation = new LatLng(lattitude, longitude);
-		mMap.addMarker(new MarkerOptions().position(startLocation).title("Start Location"));
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 13), 2000, null);
+		map.addMarker(new MarkerOptions().position(startLocation).title("Start Location"));
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 13), 2000, null);
 
-		targetLocation = game.getLocations().get(0);
-		PolygonOptions rectOptions = new PolygonOptions()
-				.add(targetLocation.getTopLeft())
-				.add(targetLocation.getBottomLeft())
-				.add(targetLocation.getBottomRight())
-				.add(targetLocation.getTopRight());
-
-		polygon = mMap.addPolygon(rectOptions);
+		polygon = game.init(map);
 
 	}
 
 	private void setMapSettings() {
-		mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-		mMap.setBuildingsEnabled(true);
+		map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+		map.setBuildingsEnabled(true);
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			Log.d(TAG, "Location permissions not granted");
 		}
-		mMap.setMyLocationEnabled(true);
-		UiSettings settings = mMap.getUiSettings();
+		map.setMyLocationEnabled(true);
+		UiSettings settings = map.getUiSettings();
 		settings.setMapToolbarEnabled(false);
 		settings.setMyLocationButtonEnabled(false);
 
 	}
 
-	// TODO get next location and update polygon
-	private void getNextLocation() {
-		targetLocation = game.getLocations().get(targetLocation.getLocNum() + 1);
-		ArrayList<LatLng> points = new ArrayList<>();
-		points.add(targetLocation.getTopLeft());
-		points.add(targetLocation.getBottomLeft());
-		points.add(targetLocation.getBottomRight());
-		points.add(targetLocation.getTopRight());
-		polygon.setPoints(points);
-	}
 }
