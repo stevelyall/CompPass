@@ -11,7 +11,7 @@ import okhttp3.Response;
 
 public class LocationsJSONRequest extends AsyncTask<String, String, String> {
 
-		private final String url = "http://stevenlyall.ca/3160project/get_locations.php";
+	private final String url = "http://stevenlyall.ca/comppass/get_locations.php";
 		private final String TAG = "LocationsJSONRequest";
 
 	@Override

@@ -19,7 +19,7 @@ import java.net.URL;
 public class SendJSON extends AsyncTask<String, String, String> {
 
 	private final String TAG = "SendJSON";
-	private final String URL = "http://stevenlyall.ca/3160project/post_results.php";
+	private final String URL = "http://stevenlyall.ca/comppass/post_results.php";
 
 	String strFrileContents = null;
 	Context ctx;

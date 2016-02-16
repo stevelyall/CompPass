@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 public class SplashScreenActivity extends Activity {
 
@@ -41,7 +40,6 @@ public class SplashScreenActivity extends Activity {
 
 	private void getLocationsFromServer() {
 		if (isNetworkConnected()) {
-			Toast.makeText(getBaseContext(), "GET", Toast.LENGTH_LONG).show();
 			LocationsJSONRequest request = new LocationsJSONRequest();
 			request.execute();
 

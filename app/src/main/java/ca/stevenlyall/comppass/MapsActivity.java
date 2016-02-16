@@ -108,6 +108,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 			public void onChronometerTick(Chronometer chronometer) {
 				long time = SystemClock.elapsedRealtime() - chronometer.getBase();
 				game.setTimeElapsed(time);
+
+				if (game.getTimeElapsed() % 60000 == 0) {
+					game.playTickSound(getBaseContext());
+				}
 			}
 		});
 		chronometer.start();
@@ -124,19 +128,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 	private void onTargetLocationReached() {
+		stopListeningForLocations();
 		Log.d("Location", "Target location reached");
 		game.playLocationReachedSound(getBaseContext());
 		GameLocation loc = game.nextLocation();
 		if (loc == null && game.getLocations().size() == game.numLocationsReached()) {
 			allLocationsReached();
+			return;
 		}
-		ArrayList<LatLng> points = loc.getPoints();
-		polygon.setPoints(points);
+		if (loc != null) {
+			ArrayList<LatLng> points = loc.getPoints();
+			polygon.setPoints(points);
+			startListeningForLocations();
+		}
+
 	}
 
 	private void allLocationsReached() {
 		Log.d(TAG, "allLocationsReached: " + game.numLocationsReached() + " locations reached out of " + game.getLocations().size());
-
+		stopListeningForLocations();
 		chronometer.stop();
 		game.finish();
 
@@ -148,11 +158,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			Log.d(TAG, "Location permissions not granted");
-		}
-		// Register the listener with the Location Manager to receive location updates
-		locationManager.requestLocationUpdates(bestProvider, 0, 0, locationListener);
+
+
+		startListeningForLocations();
 
 
 	}
@@ -185,9 +193,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		PolygonOptions rect = new PolygonOptions().addAll(loc.getPoints());
 		rect.strokeColor(Color.YELLOW);
 		polygon = map.addPolygon(rect);
-
-		// TODO test results activity
-		//allLocationsReached();
 	}
 
 	private void setMapSettings() {
@@ -203,4 +208,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 	}
 
+	private void startListeningForLocations() {
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			Log.d(TAG, "Location permissions not granted");
+		}
+		// Register the listener with the Location Manager to receive location updates
+		locationManager.requestLocationUpdates(bestProvider, 0, 0, locationListener);
+	}
+
+	private void stopListeningForLocations() {
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			Log.d(TAG, "Location permissions not granted");
+		}
+		locationManager.removeUpdates(locationListener);
+	}
 }

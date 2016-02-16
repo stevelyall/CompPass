@@ -2,6 +2,7 @@ package ca.stevenlyall.comppass;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,6 +16,8 @@ public class ResultsActivity extends AppCompatActivity {
 	private TextView numLocationsReachedTextView, totalTimeTextView, playerNameTextView;
 	private Button sendButton;
 	private Result result;
+	private boolean sent = false;
+	private String TAG = "ResultsActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,19 +44,18 @@ public class ResultsActivity extends AppCompatActivity {
 		sendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendResults();                // TODO get results as JSON and send to server
+				if (!sent) {
+					sendResults();
+				}
 			}
 		});
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
-
 	private void sendResults() {
 		String resultsJSON = result.toJSON();
+		Log.d(TAG, "sendResults: result to send:" + resultsJSON);
 		SendJSON sendJSON = new SendJSON();
 		sendJSON.execute(resultsJSON);
+		sent = true;
 	}
 }

@@ -7,6 +7,7 @@ import android.util.Log;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Game {
 	private static Game instance;
@@ -25,6 +26,14 @@ public class Game {
 			instance = new Game();
 		}
 		return instance;
+	}
+
+	public long getTimeElapsed() {
+		return timeElapsed;
+	}
+
+	public void setTimeElapsed(long timeElapsed) {
+		this.timeElapsed = timeElapsed;
 	}
 
 	public Result getResult() {
@@ -47,16 +56,19 @@ public class Game {
 		return locations;
 	}
 
-
 	public void playLocationReachedSound(Context ctx) {
 		MediaPlayer mediaPlayer = MediaPlayer.create(ctx, R.raw.beep);
+		mediaPlayer.start();
+	}
+
+	public void playTickSound(Context ctx) {
+		MediaPlayer mediaPlayer = MediaPlayer.create(ctx, R.raw.tick);
 		mediaPlayer.start();
 	}
 
 	public GameLocation getTargetLocation() {
 		return locations.get(currentTarget);
 	}
-
 
 	//get next location and update polygon
 	public GameLocation nextLocation() {
@@ -80,13 +92,10 @@ public class Game {
 		return (latitude < locations.get(currentTarget).getMaxLat() && latitude > locations.get(currentTarget).getMinLat()) && (longitude < locations.get(currentTarget).getMaxLong() && longitude > locations.get(currentTarget).getMinLong());
 	}
 
-	public void setTimeElapsed(long timeElapsed) {
-		this.timeElapsed = timeElapsed;
-	}
-
 	public void finish() {
 		result.setTotalTime(timeElapsed);
 		result.setPlayerName(playerName);
+		result.setDateCompleted(new Date());
 	}
 
 	public void setPlayerName(String playerName) {
