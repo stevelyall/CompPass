@@ -13,8 +13,8 @@ public class Game {
 	private final String TAG = "GAME";
 	private int currentTarget;
 	private ArrayList<GameLocation> locations;
+	private String playerName;
 	private Result result;
-
 	private long timeElapsed;
 
 	private Game() {
@@ -25,6 +25,10 @@ public class Game {
 			instance = new Game();
 		}
 		return instance;
+	}
+
+	public Result getResult() {
+		return result;
 	}
 
 	public int numLocationsReached() {
@@ -76,11 +80,16 @@ public class Game {
 		return (latitude < locations.get(currentTarget).getMaxLat() && latitude > locations.get(currentTarget).getMinLat()) && (longitude < locations.get(currentTarget).getMaxLong() && longitude > locations.get(currentTarget).getMinLong());
 	}
 
-	public long getTimeElapsed() {
-		return timeElapsed;
-	}
-
 	public void setTimeElapsed(long timeElapsed) {
 		this.timeElapsed = timeElapsed;
+	}
+
+	public void finish() {
+		result.setTotalTime(timeElapsed);
+		result.setPlayerName(playerName);
+	}
+
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
 	}
 }

@@ -51,7 +51,7 @@
         <activity
             android:name=".ResultsActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_results"
+            android:label="Results"
             android:theme="@style/FullscreenTheme">
         </activity>
     </application>

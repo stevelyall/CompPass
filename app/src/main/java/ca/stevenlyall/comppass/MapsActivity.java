@@ -51,9 +51,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 		game = Game.getInstance();
 
-		// TODO test results activity
-		allLocationsReached();
-
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
 		// choose the best location provider
@@ -132,7 +129,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		GameLocation loc = game.nextLocation();
 		if (loc == null && game.getLocations().size() == game.numLocationsReached()) {
 			allLocationsReached();
-			chronometer.stop();
 		}
 		ArrayList<LatLng> points = loc.getPoints();
 		polygon.setPoints(points);
@@ -140,6 +136,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 	private void allLocationsReached() {
 		Log.d(TAG, "allLocationsReached: " + game.numLocationsReached() + " locations reached out of " + game.getLocations().size());
+
+		chronometer.stop();
+		game.finish();
 
 		Intent resultsActivity = new Intent(this, ResultsActivity.class);
 		startActivity(resultsActivity);
@@ -186,6 +185,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		PolygonOptions rect = new PolygonOptions().addAll(loc.getPoints());
 		rect.strokeColor(Color.YELLOW);
 		polygon = map.addPolygon(rect);
+
+		// TODO test results activity
+		//allLocationsReached();
 	}
 
 	private void setMapSettings() {
