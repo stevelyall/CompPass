@@ -2,6 +2,7 @@ package ca.stevenlyall.comppass;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -9,9 +10,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.widget.Chronometer;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,6 +26,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.util.ArrayList;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
 	private final String TAG = "MapsActivity";
@@ -33,6 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	Game game;
 	Polygon polygon;
 
+	Chronometer chronometer;
 
 	double latitude;
 	double longitude;
@@ -44,6 +50,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		setContentView(R.layout.activity_maps);
 
 		game = Game.getInstance();
+
+		// TODO test results activity
+		allLocationsReached();
 
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -89,8 +98,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
+		chronometer = (Chronometer) mapFragment.getView().findViewById(R.id.chronometer);
+		startTimer();
 	}
 
+	private void startTimer() {
+		chronometer.setFormat("00:%s");
+		chronometer.setBackgroundColor(Color.WHITE);
+		Log.d(TAG, "startTimer: timer started at " + chronometer.getBase());
+		chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+			@Override
+			public void onChronometerTick(Chronometer chronometer) {
+				long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+				game.setTimeElapsed(time);
+			}
+		});
+		chronometer.start();
+	}
 	private void findBestLocationProvider() {
 		Criteria criteria = new Criteria();
 		criteria.setAccuracy(Criteria.ACCURACY_COARSE);
@@ -103,12 +127,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 	private void onTargetLocationReached() {
-		//todo timer
 		Log.d("Location", "Target location reached");
-		polygon.setPoints(game.getNextLocation());
 		game.playLocationReachedSound(getBaseContext());
+		GameLocation loc = game.nextLocation();
+		if (loc == null && game.getLocations().size() == game.numLocationsReached()) {
+			allLocationsReached();
+			chronometer.stop();
+		}
+		ArrayList<LatLng> points = loc.getPoints();
+		polygon.setPoints(points);
 	}
 
+	private void allLocationsReached() {
+		Log.d(TAG, "allLocationsReached: " + game.numLocationsReached() + " locations reached out of " + game.getLocations().size());
+
+		Intent resultsActivity = new Intent(this, ResultsActivity.class);
+		startActivity(resultsActivity);
+		finish();
+	}
 
 	@Override
 	protected void onResume() {
@@ -146,10 +182,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		map.addMarker(new MarkerOptions().position(startLocation).title("Start Location"));
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 13), 2000, null);
 
-		PolygonOptions rect = game.init();
+		GameLocation loc = game.getTargetLocation();
+		PolygonOptions rect = new PolygonOptions().addAll(loc.getPoints());
 		rect.strokeColor(Color.YELLOW);
 		polygon = map.addPolygon(rect);
-
 	}
 
 	private void setMapSettings() {

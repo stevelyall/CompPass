@@ -32,7 +32,8 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps">
+            android:label="@string/title_activity_maps"
+            android:screenOrientation="locked">
         </activity>
         <activity
             android:name=".SplashScreenActivity"
@@ -46,6 +47,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity">
+        </activity>
+        <activity
+            android:name=".ResultsActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_results"
+            android:theme="@style/FullscreenTheme">
         </activity>
     </application>
 

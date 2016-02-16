@@ -4,9 +4,6 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolygonOptions;
-
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -14,9 +11,11 @@ import java.util.ArrayList;
 public class Game {
 	private static Game instance;
 	private final String TAG = "GAME";
+	private int currentTarget;
 	private ArrayList<GameLocation> locations;
-	private ArrayList<GameLocation> reached;
-	private GameLocation currentTarget;
+	private Result result;
+
+	private long timeElapsed;
 
 	private Game() {
 	}
@@ -28,12 +27,16 @@ public class Game {
 		return instance;
 	}
 
-	public void setUpLocations(final JSONArray locationsJSON) throws Exception {
-		reached = new ArrayList<GameLocation>();
+	public int numLocationsReached() {
+		return result.getNumberLocationsReached();
+	}
 
+	public void setUpLocations(final JSONArray locationsJSON) throws Exception {
 		LocationParser parser = new LocationParser(locationsJSON);
 		locations = parser.setLocations();
+		result = new Result(locations.size());
 
+		currentTarget = 0;
 	}
 
 	public ArrayList<GameLocation> getLocations() {
@@ -46,46 +49,38 @@ public class Game {
 		mediaPlayer.start();
 	}
 
-	public PolygonOptions init() {
-		currentTarget = locations.get(0);
-		Log.d(TAG, "init: first location " + currentTarget);
-		ArrayList<LatLng> points = getPointsForLocation(currentTarget);
-		PolygonOptions rectOptions = new PolygonOptions().addAll(points);
-		return rectOptions;
+	public GameLocation getTargetLocation() {
+		return locations.get(currentTarget);
 	}
 
-	private ArrayList<LatLng> getPointsForLocation(GameLocation location) {
-		ArrayList<LatLng> points = new ArrayList<>();
-		points.add(location.getTopLeft());
-		points.add(location.getBottomLeft());
-		points.add(location.getBottomRight());
-		points.add(location.getTopRight());
-		return points;
-	}
 
 	//get next location and update polygon
-	public ArrayList<LatLng> getNextLocation() {
-		reached.add(currentTarget);
+	public GameLocation nextLocation() {
+		result.locationReached(locations.get(currentTarget), timeElapsed);
+
 		// check for end of list
-		if (currentTarget.getLocNum() + 1 >= locations.size() - 1) {
-			allLocationsReached();
+		if (currentTarget + 1 == locations.size()) {
+			return null;
 		}
-		currentTarget = locations.get(currentTarget.getLocNum() + 1);
 
-		Log.d(TAG, "getNextLocation: " + currentTarget);
-		return getPointsForLocation(currentTarget);
-	}
+		currentTarget++;
+		Log.d(TAG, "nextLocation: " + locations.get(currentTarget));
+		return getTargetLocation();
 
-	private void allLocationsReached() {
-		Log.d(TAG, "allLocationsReached: " + reached.size() + " locations visited");
-		// TODO play sound, new activity
-		// TODO finish, determine and send score
 	}
 
 	public boolean isLocInsideTarget(double latitude, double longitude) {
-		if (currentTarget == null) {
+		if (locations.get(currentTarget) == null) {
 			return false;
 		}
-		return (latitude < currentTarget.getMaxLat() && latitude > currentTarget.getMinLat()) && (longitude < currentTarget.getMaxLong() && longitude > currentTarget.getMinLong());
+		return (latitude < locations.get(currentTarget).getMaxLat() && latitude > locations.get(currentTarget).getMinLat()) && (longitude < locations.get(currentTarget).getMaxLong() && longitude > locations.get(currentTarget).getMinLong());
+	}
+
+	public long getTimeElapsed() {
+		return timeElapsed;
+	}
+
+	public void setTimeElapsed(long timeElapsed) {
+		this.timeElapsed = timeElapsed;
 	}
 }

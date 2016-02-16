@@ -9,7 +9,6 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 	private final String TAG = "MainActivity";
-	private Game game;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		game = Game.getInstance();
+		Game game = Game.getInstance();
 		Log.d(TAG, "onCreate: locations loaded: " + game.getLocations().size());
 	}
 

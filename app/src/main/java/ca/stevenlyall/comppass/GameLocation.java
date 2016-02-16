@@ -2,6 +2,8 @@ package ca.stevenlyall.comppass;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
+
 /**
  * Created by stevenlyall on 16-02-14.
  */
@@ -81,6 +83,15 @@ public class GameLocation {
 
 	public void setMinLong(double minLong) {
 		this.minLong = minLong;
+	}
+
+	public ArrayList<LatLng> getPoints() {
+		ArrayList<LatLng> points = new ArrayList<>();
+		points.add(topLeft);
+		points.add(bottomLeft);
+		points.add(bottomRight);
+		points.add(topRight);
+		return points;
 	}
 
 	@Override
