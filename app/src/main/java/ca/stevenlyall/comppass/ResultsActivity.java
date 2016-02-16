@@ -18,6 +18,7 @@ public class ResultsActivity extends AppCompatActivity {
 	private Result result;
 	private boolean sent = false;
 	private String TAG = "ResultsActivity";
+	private Game game;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +30,7 @@ public class ResultsActivity extends AppCompatActivity {
 		totalTimeTextView = (TextView) findViewById(R.id.totalTimeTextView);
 		playerNameTextView = (TextView) findViewById(R.id.playerNameTextView);
 
-		Game game = Game.getInstance();
+		game = Game.getInstance();
 		result = game.getResult();
 		numLocationsReachedTextView.setText(result.getNumberLocationsReached() + "/" + game.getLocations().size());
 
@@ -45,6 +46,7 @@ public class ResultsActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				if (!sent) {
+					game.playTickSound(getBaseContext());
 					sendResults();
 				}
 			}

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 				} else {
 					String name = editText.getText().toString();
 					game.setPlayerName(name);
-
+					game.playTickSound(getBaseContext());
 					goToMap();
 				}
 			}

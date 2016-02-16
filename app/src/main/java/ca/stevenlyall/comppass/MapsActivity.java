@@ -108,10 +108,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 			public void onChronometerTick(Chronometer chronometer) {
 				long time = SystemClock.elapsedRealtime() - chronometer.getBase();
 				game.setTimeElapsed(time);
-
-				if (game.getTimeElapsed() % 60000 == 0) {
-					game.playTickSound(getBaseContext());
-				}
 			}
 		});
 		chronometer.start();
