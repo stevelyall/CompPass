@@ -3,15 +3,11 @@ package ca.stevenlyall.comppass;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
@@ -32,36 +28,22 @@ public class SplashScreenActivity extends Activity {
 		getLocationsFromServer();
 	}
 
-	private boolean isNetworkConnected() {
-		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = connectivityManager.getActiveNetworkInfo();
-		return (info != null && info.isConnected());
-	}
+
 
 	private void getLocationsFromServer() {
-		if (isNetworkConnected()) {
+		ConnectionChecker checker = new ConnectionChecker(SplashScreenActivity.this);
+		if (checker.isNetworkConnected()) {
 			LocationsJSONRequest request = new LocationsJSONRequest();
 			request.execute();
 
 			// check for permissions
 			checkForLocationPermissions();
 		} else {
-			showNoConnectionMessage();
+			checker.showNoConnectionMessage();
 		}
 	}
 
-	private void showNoConnectionMessage() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(SplashScreenActivity.this);
-		builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				SplashScreenActivity.this.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-			}
-		});
-		builder.setTitle("No Network Connection").setMessage("Please connect your device to a WiFi or cellular network and try again");
 
-		builder.create().show();
-	}
 
 	private void checkForLocationPermissions() {
 		// check for permissions

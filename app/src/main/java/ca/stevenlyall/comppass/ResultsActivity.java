@@ -45,20 +45,31 @@ public class ResultsActivity extends AppCompatActivity {
 		sendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				ConnectionChecker checker = new ConnectionChecker(ResultsActivity.this);
+				if (!checker.isNetworkConnected()) {
+					checker.showNoConnectionMessage();
+					return;
+				}
 				if (!sent) {
 					game.playTickSound(getBaseContext());
 					sendResults();
+					showResultsSentMessage();
 				}
 			}
 		});
 	}
 
 	private void sendResults() {
+
+
 		String resultsJSON = result.toJSON();
 		Log.d(TAG, "sendResults: result to send:" + resultsJSON);
 		SendJSON sendJSON = new SendJSON();
 		sendJSON.execute(resultsJSON);
 		sent = true;
+	}
+
+	private void showResultsSentMessage() {
 		sendButton.setVisibility(View.GONE);
 		TextView sent = (TextView) findViewById(R.id.resultsUploadedTextView);
 		sent.setVisibility(View.VISIBLE);
