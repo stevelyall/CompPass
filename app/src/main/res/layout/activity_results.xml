@@ -102,6 +102,7 @@
             android:layout_height="wrap_content"
             android:text="Medium Text"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
+
     </TableRow>
 
     <Button
@@ -115,6 +116,19 @@
         android:backgroundTint="@color/colorPrimary"
         android:text="Send Results"
         android:textColor="#FFF"/>
+
+    <TextView
+        android:id="@+id/resultsUploadedTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:keepScreenOn="true"
+        android:text="Results Uploaded"
+        android:textColor="@color/colorPrimary"
+        android:textSize="30dp"
+        android:textStyle="bold"
+        android:visibility="gone"/>
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->

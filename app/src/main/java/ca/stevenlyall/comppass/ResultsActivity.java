@@ -59,5 +59,8 @@ public class ResultsActivity extends AppCompatActivity {
 		SendJSON sendJSON = new SendJSON();
 		sendJSON.execute(resultsJSON);
 		sent = true;
+		sendButton.setVisibility(View.GONE);
+		TextView sent = (TextView) findViewById(R.id.resultsUploadedTextView);
+		sent.setVisibility(View.VISIBLE);
 	}
 }
