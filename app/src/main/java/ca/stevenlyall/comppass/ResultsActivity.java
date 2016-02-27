@@ -1,5 +1,7 @@
 package ca.stevenlyall.comppass;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,7 +16,7 @@ import java.util.Date;
 public class ResultsActivity extends AppCompatActivity {
 
 	private TextView numLocationsReachedTextView, totalTimeTextView, playerNameTextView;
-	private Button sendButton;
+	private Button sendButton, viewScoresButton;
 	private Result result;
 	private boolean sent = false;
 	private String TAG = "ResultsActivity";
@@ -41,7 +43,7 @@ public class ResultsActivity extends AppCompatActivity {
 
 		playerNameTextView.setText(result.getPlayerName());
 
-		sendButton = (Button) findViewById(R.id.button);
+		sendButton = (Button) findViewById(R.id.sendButton);
 		sendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -55,6 +57,15 @@ public class ResultsActivity extends AppCompatActivity {
 					sendResults();
 					showResultsSentMessage();
 				}
+			}
+		});
+
+		viewScoresButton = (Button) findViewById(R.id.viewScoresBtn);
+		viewScoresButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://stevenlyall.ca/comppass/show_results.php"));
+				startActivity(browserIntent);
 			}
 		});
 	}
@@ -73,5 +84,6 @@ public class ResultsActivity extends AppCompatActivity {
 		sendButton.setVisibility(View.GONE);
 		TextView sent = (TextView) findViewById(R.id.resultsUploadedTextView);
 		sent.setVisibility(View.VISIBLE);
+		viewScoresButton.setVisibility(View.VISIBLE);
 	}
 }
