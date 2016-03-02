@@ -58,7 +58,6 @@ public class LocationParser {
 					minLat = Double.parseDouble(o.getString("latitude"));
 					minLong = Double.parseDouble(o.getString("longitude"));
 				}
-				// todo get center?
 			}
 			GameLocation location = new GameLocation(locNum, maxLat, maxLong, minLat, minLong);
 			locations.add(location);
